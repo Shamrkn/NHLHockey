@@ -1,6 +1,7 @@
 import requests
 import json
 import datetime
+import time
 
 teamID = '17'    #Detroit Redwings Team ID
 
@@ -95,6 +96,22 @@ def findNextGame():
         nextGameText = datetime.datetime.fromisoformat(nextGameDate[:19])
         
         #nextGameText = 
+        delta = (nextGameText - datetime.datetime.utcnow())
+        this = delta.seconds + 1
+        secs = this % 60
+        minutes = int((this / 60) % 60)
+        hours = (this / 3600)
+        print('h' + str(hours)  +str(secs) + 'm' + str(minutes))
+        days = delta.days
+        hours = delta.seconds / 3600
+        minutes = delta // 3600  
+        
+        print("d:" + str(days) + ' h:' + str(hours))
+        
+
+        print(str(days) + "d " + str(hours) + 'h ' + str(minutes) + 'm ' )#+ str(seconds) + 's')
+        print(hours)
+        #print (datetime.datetime.utcnow()) 
         print(nextGameText)
     else:
         nextGameText = "Error"
