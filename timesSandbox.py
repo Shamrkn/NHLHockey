@@ -95,26 +95,29 @@ def findNextGame():
         #nextGameText = datetime.datetime.strptime(nextGameDate, '%Y-%m-%d')
         nextGameText = datetime.datetime.fromisoformat(nextGameDate[:19])
         
-        #nextGameText = 
+        #===============================================================================
+        #==== Use maths to break out time until next game                          =====
+        #===============================================================================
         delta = (nextGameText - datetime.datetime.utcnow())
-        this = delta.seconds + 1
-        secs = this % 60
-        minutes = int((this / 60) % 60)
-        hours = (this / 3600)
-        print('h' + str(hours)  +str(secs) + 'm' + str(minutes))
-        days = delta.days
-        hours = delta.seconds / 3600
-        minutes = delta // 3600  
+        total_secs = delta.seconds
+        hours = total_secs // 3600
+        secs_remaining = total_secs % 3600
+        minutes = secs_remaining // 60
+        secs = secs_remaining % 60
+        days = int(delta.days)
+        hours = int(delta.seconds//3600)
+        minutes = int(delta.seconds // 60) % 60
+ 
+        print("days difference: " + str(days))
+        print("hours difference: " + str(hours))
+        print("minutes difference: " + str(minutes))
+        print("seconds difference: " + str(secs))
         
-        print("d:" + str(days) + ' h:' + str(hours))
-        
-
-        print(str(days) + "d " + str(hours) + 'h ' + str(minutes) + 'm ' )#+ str(seconds) + 's')
-        print(hours)
-        #print (datetime.datetime.utcnow()) 
         print(nextGameText)
     else:
         nextGameText = "Error"
+
+def timeUntil():
 
 if __name__ == '__main__':     #program starts from here
     checkForGameToday()
