@@ -96,7 +96,7 @@ def findNextGame():
         awayData = nextGameData["teams"] ["away"]
         #convert string to date so we can maths
 
-        nextGameText = getFutureGameText(awayData, homeData)
+        #nextGameText = getFutureGameText(awayData, homeData)
         nextGameTime = datetime.datetime.fromisoformat(nextGameDate[:19])
         
         #===============================================================================
