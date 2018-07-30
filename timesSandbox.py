@@ -2,6 +2,7 @@ import requests
 import json
 import datetime
 import time
+import subprocess as sp
 
 teamID = '17'    #Detroit Redwings Team ID
 
@@ -9,12 +10,14 @@ baseurl = 'https://statsapi.web.nhl.com'
 
 url = 'https://statsapi.web.nhl.com/api/v1/schedule'
 
-now = datetime.datetime.today().strftime('%Y-%m-%d')
+ngUpdateSeconds = 3600      #hourly cycle for refreshing next game data
+
+
 
 
 def checkForGameToday():
  
-
+    now = datetime.datetime.today().strftime('%Y-%m-%d')
     payload = {'teamId': teamID, 'startDate': now, 'endDate': now}
     #===============================================================
     #==== Uncomment This to check daily schedule                ====
@@ -82,7 +85,7 @@ def getLiveGameData(parsed_json):
 
 
 def findNextGame():
-    url = baseurl + '/api/v1/teams/17?expand=team.schedule.next'
+    url = baseurl + '/api/v1/teams/' + str(teamID) + '?expand=team.schedule.next'
     r = requests.get(url)
     parsed_json = json.loads(r.text)
     nextGameInfo = parsed_json["teams"] [0] ["nextGameSchedule"]
@@ -92,32 +95,70 @@ def findNextGame():
         homeData = nextGameData["teams"] ["home"]
         awayData = nextGameData["teams"] ["away"]
         #convert string to date so we can maths
-        #nextGameText = datetime.datetime.strptime(nextGameDate, '%Y-%m-%d')
-        nextGameText = datetime.datetime.fromisoformat(nextGameDate[:19])
+
+        nextGameText = getFutureGameText(awayData, homeData)
+        nextGameTime = datetime.datetime.fromisoformat(nextGameDate[:19])
         
         #===============================================================================
         #==== Use maths to break out time until next game                          =====
         #===============================================================================
-        delta = (nextGameText - datetime.datetime.utcnow())
-        total_secs = delta.seconds
-        hours = total_secs // 3600
-        secs_remaining = total_secs % 3600
-        minutes = secs_remaining // 60
-        secs = secs_remaining % 60
-        days = int(delta.days)
-        hours = int(delta.seconds//3600)
-        minutes = int(delta.seconds // 60) % 60
- 
+
+        now = datetime.datetime.utcnow()
+
+        i = 0
+        while i < ngUpdateSeconds :
+            days, hours, minutes, secs = timeUntil(nextGameTime, now)
+
+            if days > 0 :
+                print(str(days) + 'd ' + str(hours) + ':' + str(minutes) + ':' + str(secs))
+            else :
+                print(str(hours) + ':' + str(minutes) + ':' + str(secs))
+            time.sleep(1)
+            clear()
+
         print("days difference: " + str(days))
         print("hours difference: " + str(hours))
         print("minutes difference: " + str(minutes))
         print("seconds difference: " + str(secs))
+        time.sleep(5)
+        clear()
         
-        print(nextGameText)
+        print(nextGameTime)
     else:
         nextGameText = "Error"
 
-def timeUntil():
+def timeUntil(endDateTime, startDateTime):
+        #===============================================================================
+        #==== Use maths to break out time difference                               =====
+        #===============================================================================
+    delta = (endDateTime - startDateTime)
+    total_secs = delta.seconds
+    hours = total_secs // 3600
+    secs_remaining = total_secs % 3600
+    minutes = secs_remaining // 60
+    secs = secs_remaining % 60
+    days = int(delta.days)
+    hours = int(delta.seconds//3600)
+    minutes = int(delta.seconds // 60) % 60
+
+    return days, hours, minutes, secs
+
+def getFutureGameText(awayInfo, homeInfo):
+    link = baseurl + awayInfo["team"] ["link"] + '?expand=team.stats'
+
+
+def clear() :
+    tmp = sp.call('clear', shell=True)
+
+def loop() :
+        #===============================================================================
+        #==== main function that drives the program                                =====
+        #===============================================================================
+    checkForGameToday()
 
 if __name__ == '__main__':     #program starts from here
-    checkForGameToday()
+    #checkForGameToday()
+    try:
+        loop()
+    except KeyboardInterrupt: #when ctrl+c pressed, clean up resources
+        clear()
